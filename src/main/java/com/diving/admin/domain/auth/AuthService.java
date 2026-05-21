@@ -23,7 +23,9 @@ public class AuthService {
         KakaoUserInfo userInfo = kakaoClient.getUserInfo(kakaoAccessToken);
 
         Instructor instructor = instructorRepository.findByKakaoId(userInfo.kakaoId())
-                .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 강사입니다."));
+                .orElseGet(() -> instructorRepository.save(
+                        Instructor.create(userInfo.kakaoId(), userInfo.nickname(), userInfo.profileImageUrl())
+                ));
 
         String instructorId = instructor.getInstructorId();
         String accessToken = jwtProvider.createAccessToken(instructorId);
