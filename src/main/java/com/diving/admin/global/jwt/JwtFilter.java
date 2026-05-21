@@ -1,5 +1,6 @@
 package com.diving.admin.global.jwt;
 
+import com.diving.admin.global.redis.RedisTokenStore;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,13 +18,14 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final RedisTokenStore redisTokenStore;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String token = resolveToken(request);
 
-        if (token != null && jwtProvider.isValid(token)) {
+        if (token != null && jwtProvider.isValid(token) && !redisTokenStore.isBlacklisted(token)) {
             String username = jwtProvider.getUsername(token);
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(username, null, List.of());
