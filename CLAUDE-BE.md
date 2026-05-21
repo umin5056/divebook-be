@@ -9,7 +9,7 @@
 - **Java** + **Spring Boot**
 - **Spring Security** + **JWT** (인증)
 - **JPA** / **Hibernate** (ORM)
-- **MySQL** (메인 DB)
+- **MariaDB** (메인 DB)
 - **Redis** (캐싱 / 세션)
 - **Docker** (컨테이너)
 - **AWS** EC2 + RDS + S3 (인프라)
@@ -22,66 +22,92 @@ src/
 └── main/
     ├── java/com/diving/admin/
     │   ├── domain/
-    │   │   ├── admin/
-    │   │   │   ├── Admin.java
-    │   │   │   ├── AdminRepository.java
-    │   │   │   └── AdminService.java
-    │   │   ├── lesson/
-    │   │   │   ├── Lesson.java
-    │   │   │   ├── LessonRepository.java
-    │   │   │   ├── LessonService.java
-    │   │   │   └── LessonController.java
+    │   │   ├── crew/
+    │   │   ├── instructor/
     │   │   ├── student/
-    │   │   │   ├── Student.java
-    │   │   │   ├── StudentRepository.java
-    │   │   │   ├── StudentService.java
-    │   │   │   └── StudentController.java
+    │   │   ├── lesson/
     │   │   └── enrollment/
-    │   │       ├── LessonEnrollment.java
-    │   │       ├── LessonEnrollmentRepository.java
-    │   │       ├── LessonEnrollmentService.java
-    │   │       └── LessonEnrollmentController.java
     │   ├── global/
     │   │   ├── config/
-    │   │   │   ├── SecurityConfig.java
-    │   │   │   ├── RedisConfig.java
-    │   │   │   └── JwtConfig.java
+    │   │   │   └── SecurityConfig.java
     │   │   ├── jwt/
     │   │   │   ├── JwtProvider.java
-    │   │   │   └── JwtFilter.java
+    │   │   │   ├── JwtFilter.java
+    │   │   │   └── JwtProperties.java
     │   │   └── exception/
     │   │       ├── GlobalExceptionHandler.java
     │   │       └── ErrorResponse.java
     │   └── AdminApplication.java
     └── resources/
-        └── application.yml
+        ├── application.yml
+        └── application-db.yml
 ```
 
 ## DB 설계
 
-### Admin (관리자)
+### tbl_crew (크루)
 
-```sql
+| 컬럼 | 타입 | 설명 |
+|---|---|---|
+| crew_id | char(36) | PK, UUID |
+| name | varchar(100) | 크루명 |
+| description | varchar(500) | 설명 |
+| created_at | datetime | 생성일 |
+| modified_at | datetime | 수정일 |
 
-```
+### tbl_instructor (강사)
 
-### Student (수강생)
+| 컬럼 | 타입 | 설명 |
+|---|---|---|
+| instructor_id | char(36) | PK, UUID |
+| crew_id | char(36) | FK → tbl_crew |
+| kakao_id | varchar(100) | 카카오 ID (UNI) |
+| email | varchar(255) | 이메일 |
+| phone | varchar(20) | 전화번호 |
+| profile_image_url | varchar(500) | 프로필 이미지 |
+| name | varchar(100) | 이름 |
+| memo | text | 메모 |
+| created_at | datetime | 생성일 |
+| modified_at | datetime | 수정일 |
 
-```sql
+### tbl_student (수강생)
 
-```
+| 컬럼 | 타입 | 설명 |
+|---|---|---|
+| student_id | char(36) | PK, UUID |
+| crew_id | char(36) | FK → tbl_crew |
+| phone | varchar(20) | 전화번호 (UNI) |
+| name | varchar(100) | 이름 |
+| email | varchar(255) | 이메일 |
+| memo | text | 메모 |
+| created_at | datetime | 생성일 |
+| modified_at | datetime | 수정일 |
 
-### Lesson (수업)
+### tbl_lesson (수업)
 
-```sql
+| 컬럼 | 타입 | 설명 |
+|---|---|---|
+| lesson_id | char(36) | PK, UUID |
+| instructor_id | char(36) | FK → tbl_instructor |
+| title | varchar(200) | 수업명 |
+| location | varchar(300) | 장소 |
+| scheduled_at | datetime | 수업 일시 |
+| max_students | smallint | 최대 수강 인원 |
+| fee | int | 수강료 |
+| status | enum | open / closed / cancelled |
+| created_at | datetime | 생성일 |
+| modified_at | datetime | 수정일 |
 
-```
+### tbl_enrollment (수업-수강생 배정)
 
-### LessonEnrollment (수업-수강생 배정)
-
-```sql
-
-```
+| 컬럼 | 타입 | 설명 |
+|---|---|---|
+| enrollment_id | char(36) | PK, UUID |
+| lesson_id | char(36) | FK → tbl_lesson |
+| student_id | char(36) | FK → tbl_student |
+| payment_status | enum | pending / paid / refunded |
+| requested_at | datetime | 배정일 |
+| modified_at | datetime | 수정일 |
 
 ## API 설계
 
@@ -91,6 +117,36 @@ src/
 POST /api/auth/login
 POST /api/auth/logout
 POST /api/auth/refresh
+```
+
+### 크루
+
+```
+GET    /api/crews           # 크루 목록
+POST   /api/crews           # 크루 생성
+GET    /api/crews/:id       # 크루 상세
+PUT    /api/crews/:id       # 크루 수정
+DELETE /api/crews/:id       # 크루 삭제
+```
+
+### 강사
+
+```
+GET    /api/instructors           # 강사 목록
+POST   /api/instructors           # 강사 추가
+GET    /api/instructors/:id       # 강사 상세
+PUT    /api/instructors/:id       # 강사 수정
+DELETE /api/instructors/:id       # 강사 삭제
+```
+
+### 수강생
+
+```
+GET    /api/students           # 수강생 목록
+POST   /api/students           # 수강생 추가
+GET    /api/students/:id       # 수강생 상세
+PUT    /api/students/:id       # 수강생 수정
+DELETE /api/students/:id       # 수강생 삭제
 ```
 
 ### 수업
@@ -103,22 +159,12 @@ PUT    /api/lessons/:id       # 수업 수정
 DELETE /api/lessons/:id       # 수업 삭제
 ```
 
-### 수강생
-
-```
-GET    /api/students          # 수강생 목록
-POST   /api/students          # 수강생 추가
-GET    /api/students/:id      # 수강생 상세
-PUT    /api/students/:id      # 수강생 수정
-DELETE /api/students/:id      # 수강생 삭제
-```
-
 ### 수업-수강생 배정
 
 ```
-POST   /api/lessons/:id/enrollments           # 수강생 배정
-DELETE /api/lessons/:id/enrollments/:studentId # 배정 취소
-PATCH  /api/lessons/:id/enrollments/:studentId # 결제 상태 변경
+POST   /api/lessons/:id/enrollments              # 수강생 배정
+DELETE /api/lessons/:id/enrollments/:studentId   # 배정 취소
+PATCH  /api/lessons/:id/enrollments/:studentId   # 결제 상태 변경
 ```
 
 ## Redis 사용처
@@ -139,27 +185,6 @@ AWS EC2 배포
     ├── Nginx (리버스 프록시)
     │   ├── / → React 앱 (S3)
     │   └── /api → Spring Boot
-    └── RDS (MySQL)
+    └── RDS (MariaDB)
         Redis
-```
-
-## application.yml 구조
-
-```yaml
-spring:
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: validate
-  redis:
-    host: ${REDIS_HOST}
-    port: 6379
-
-jwt:
-  secret: ${JWT_SECRET}
-  access-expiration: 3600000 # 1시간
-  refresh-expiration: 604800000 # 7일
 ```
