@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -16,7 +17,7 @@ public class RedisTokenStore {
     private final StringRedisTemplate redisTemplate;
 
     public void saveRefreshToken(String instructorId, String token, long ttlMs) {
-        redisTemplate.opsForValue().set(REFRESH_PREFIX + instructorId, token, ttlMs, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set(REFRESH_PREFIX + instructorId, Objects.requireNonNull(token), ttlMs, TimeUnit.MILLISECONDS);
     }
 
     public String getRefreshToken(String instructorId) {
