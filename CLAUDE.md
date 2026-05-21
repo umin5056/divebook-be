@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-@BE/CLAUDE-BE.md
+@CLAUDE-BE.md
+@CLAUDE-GIT.md
 
 ---
 
