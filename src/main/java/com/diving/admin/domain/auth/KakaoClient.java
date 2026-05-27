@@ -10,10 +10,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
+@SuppressWarnings({"unchecked", "null"})
 public class KakaoClient {
 
     private final KakaoProperties kakaoProperties;
@@ -32,12 +32,12 @@ public class KakaoClient {
 
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                 "https://kauth.kakao.com/oauth/token",
-                Objects.requireNonNull(HttpMethod.POST),
+                HttpMethod.POST,
                 new HttpEntity<>(body, headers),
                 new ParameterizedTypeReference<>() {}
         );
 
-        return (String) Objects.requireNonNull(response.getBody()).get("access_token");
+        return (String) response.getBody().get("access_token");
     }
 
     public KakaoUserInfo getUserInfo(String accessToken) {
@@ -51,16 +51,12 @@ public class KakaoClient {
                 new ParameterizedTypeReference<>() {}
         );
 
-        Map<String, Object> responseBody = Objects.requireNonNull(response.getBody());
+        Map<String, Object> responseBody = response.getBody();
         String kakaoId = String.valueOf(responseBody.get("id"));
 
-        @SuppressWarnings("unchecked")
         Map<String, Object> kakaoAccount = (Map<String, Object>) responseBody.get("kakao_account");
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> profile = (Map<String, Object>) Objects.requireNonNull(kakaoAccount).get("profile");
-
-        String nickname = (String) Objects.requireNonNull(profile).get("nickname");
+        Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+        String nickname = (String) profile.get("nickname");
         String profileImageUrl = (String) profile.get("profile_image_url");
 
         return new KakaoUserInfo(kakaoId, nickname, profileImageUrl);

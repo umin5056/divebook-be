@@ -91,9 +91,12 @@ src/
 | instructor_id | char(36) | FK → tbl_instructor |
 | title | varchar(200) | 수업명 |
 | location | varchar(300) | 장소 |
-| scheduled_at | datetime | 수업 일시 |
+| lesson_date | date | 수업 날짜 |
+| start_time | time | 시작 시간 |
+| end_time | time | 종료 시간 |
 | max_students | smallint | 최대 수강 인원 |
 | fee | int | 수강료 |
+| memo | text | 메모 |
 | status | enum | open / closed / cancelled |
 | created_at | datetime | 생성일 |
 | modified_at | datetime | 수정일 |

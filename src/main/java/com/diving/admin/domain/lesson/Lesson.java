@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "tbl_lesson")
@@ -26,13 +28,22 @@ public class Lesson {
     private String location;
 
     @Column(nullable = false)
-    private LocalDateTime scheduledAt;
+    private LocalDate lessonDate;
+
+    @Column(nullable = false)
+    private LocalTime startTime;
+
+    @Column(nullable = false)
+    private LocalTime endTime;
 
     @Column(nullable = false)
     private Short maxStudents;
 
     @Column(nullable = false)
     private Integer fee;
+
+    @Column(columnDefinition = "text")
+    private String memo;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

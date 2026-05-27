@@ -38,6 +38,11 @@ git commit -m "feat: 내용"
 git push origin feat/기능명
 
 # 5. GitHub에서 PR 생성 → main 머지
+
+# 6. 로컬, 원격 브랜치 삭제:
+git branch -d 브랜치명
+git push origin --delete 브랜치명
+
 ```
 
 ## 커밋 컨벤션

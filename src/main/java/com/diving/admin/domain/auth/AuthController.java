@@ -1,22 +1,24 @@
 package com.diving.admin.domain.auth;
 
-import com.diving.admin.global.config.FrontendProperties;
 import com.diving.admin.global.config.KakaoProperties;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class AuthController {
 
     private final AuthService authService;
     private final KakaoProperties kakaoProperties;
-    private final FrontendProperties frontendProperties;
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     @GetMapping("/kakao")
     public ResponseEntity<Void> kakaoLogin() {
@@ -25,7 +27,8 @@ public class AuthController {
                 + "&client_id=" + kakaoProperties.clientId()
                 + "&redirect_uri=" + kakaoProperties.redirectUri()
                 + "&scope=profile_nickname,profile_image";
-        return ResponseEntity.status(302).location(Objects.requireNonNull(URI.create(url))).build();
+
+        return ResponseEntity.status(302).location(URI.create(url)).build();
     }
 
     @GetMapping("/kakao/callback")
@@ -35,17 +38,18 @@ public class AuthController {
     {
         if (error != null) {
             return ResponseEntity.status(302)
-                    .location(Objects.requireNonNull(URI.create(frontendProperties.url() + "/")))
+                    .location(URI.create(frontendUrl + "/"))
                     .build();
         }
 
         LoginResponse response = authService.kakaoLogin(code);
-        String redirect = frontendProperties.url()
+        String redirect = frontendUrl
                 + "/auth/callback"
                 + "?accessToken=" + response.accessToken()
                 + "&refreshToken=" + response.refreshToken();
+        
 
-        return ResponseEntity.status(302).location(Objects.requireNonNull(URI.create(redirect))).build();
+        return ResponseEntity.status(302).location(URI.create(redirect)).build();
     }
 
     @PostMapping("/refresh")
