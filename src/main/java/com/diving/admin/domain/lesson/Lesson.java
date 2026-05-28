@@ -2,6 +2,7 @@ package com.diving.admin.domain.lesson;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "tbl_lesson")
 @Getter
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class Lesson {
 
     @Id
@@ -21,10 +23,10 @@ public class Lesson {
     @Column(name = "instructor_id", nullable = false, length = 36)
     private String instructorId;
 
-    @Column(nullable = false, length = 200)
+    @Column(nullable = false, length = 100)
     private String title;
 
-    @Column(nullable = false, length = 300)
+    @Column(nullable = false, length = 100)
     private String location;
 
     @Column(nullable = false)
@@ -43,7 +45,7 @@ public class Lesson {
     private Integer fee;
 
     @Column(columnDefinition = "text")
-    private String memo;
+    private String content;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -54,4 +56,21 @@ public class Lesson {
 
     @Column(nullable = false)
     private LocalDateTime modifiedAt;
+
+    public static Lesson create(String instructorId, CreateLessonRequest req) {
+        Lesson lesson = new Lesson();
+        lesson.instructorId = instructorId;
+        lesson.title = req.title();
+        lesson.location = req.location();
+        lesson.lessonDate = req.lessonDate();
+        lesson.startTime = req.startTime();
+        lesson.endTime = req.endTime();
+        lesson.maxStudents = req.maxStudents();
+        lesson.fee = req.fee();
+        lesson.content = req.content();
+        lesson.status = req.status();
+        lesson.createdAt = LocalDateTime.now();
+        lesson.modifiedAt = LocalDateTime.now();
+        return lesson;
+    }
 }
